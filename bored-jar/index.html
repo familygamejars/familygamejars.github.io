@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Bored Jar">
-<title>Hi Bored, I'm Dad 4.0</title>
+<title>Hi Bored, I'm Dad</title>
 <link rel="stylesheet" href="../fonts/fonts.css">
 <style>
   :root{--bg:#fff8ec;--ink:#2b2340;--muted:#6d6585;--card:#fff;--line:#eadfcc;--orange:#f97316;--green:#10b981;--purple:#9b5cf6}
@@ -161,11 +161,19 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Hi Bored,<br><span>I'm Dad.</span></h1>
+  <h1>Hi Bored,<br><span id="iam">I'm Dad.</span></h1>
 
   <!-- ===== SETUP: who's in the family ===== -->
   <section id="scrSetup" class="hidden">
     <p class="sub">First, who's in the crew?</p>
+    <div class="card">
+      <h3>🙋 Who are you?</h3>
+      <div class="chips" id="meChips">
+        <button class="chip" data-me="Dad">Dad</button><button class="chip" data-me="Mom">Mom</button><button class="chip" data-me="Grandma">Grandma</button><button class="chip" data-me="Grandpa">Grandpa</button><button class="chip" data-me="Friend">Friend</button><button class="chip" data-me="other">Other…</button>
+      </div>
+      <input id="meOther" class="hidden" maxlength="20" placeholder="Type your name, like Aunt Kim" aria-label="Your name"
+        style="margin-top:10px;width:100%;border:2px solid var(--line);border-radius:12px;padding:10px;font:700 1rem Nunito,sans-serif">
+    </div>
     <div class="card">
       <h3>👨‍👧‍👦 Who's playing</h3>
       <p class="muted small" style="margin-top:-4px">Add each kid with their age. Adding grown-ups is optional. Mark them 🧑 Grown-up so the jar knows when a grown-up is around for the trickier stuff.<br>🍼 <b>Tags along</b> = a little one who joins in but shouldn't limit the big kids' games. They get their own little job. (On by default for ages 3 and under.)</p>
@@ -324,8 +332,28 @@ function show(scr){
 }
 
 // ---------- setup ----------
-let draft = [];
+let draft = [], draftMe = null;
+const ME = ["Dad", "Mom", "Grandma", "Grandpa", "Friend"];
+// S.me is one of ME or a name typed into "Other". Older saves had no choice: they were Dad.
+function me(){ return typeof S.me === "string" && S.me.trim() ? S.me.trim() : "Dad"; }
+function renderIam(name){ $("iam").textContent = "I'm " + name + "."; document.title = "Hi Bored, I'm " + name; }
+function draftName(){ return draftMe === "other" ? $("meOther").value.trim() : draftMe; }
+function renderMeChips(){
+  document.querySelectorAll("#meChips .chip").forEach(b => b.classList.toggle("on", b.dataset.me === draftMe));
+  $("meOther").classList.toggle("hidden", draftMe !== "other");
+  renderIam(draftName() || "___");
+}
+$("meChips").addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  draftMe = b.dataset.me; renderMeChips(); $("setupMsg").textContent = "";
+  if (draftMe === "other") $("meOther").focus();
+});
+$("meOther").addEventListener("input", () => { renderIam(draftName() || "___"); $("setupMsg").textContent = ""; });
 function openSetup(){
+  const saved = typeof S.me === "string" && S.me.trim() ? S.me.trim() : (S.family.length ? "Dad" : null);
+  draftMe = saved && !ME.includes(saved) ? "other" : saved;
+  $("meOther").value = draftMe === "other" ? saved : "";
+  renderMeChips();
   draft = S.family.length ? S.family.map(m => ({...m})) : [{id:uid(), name:"", age:"", adult:false}];
   renderMembers(); show("Setup");
 }
@@ -354,11 +382,14 @@ $("memberList").addEventListener("click", e => {
 $("addKid").onclick = () => { draft.push({id:uid(), name:"", age:"", adult:false}); renderMembers(); };
 $("addAdult").onclick = () => { draft.push({id:uid(), name:"", age:"", adult:true}); renderMembers(); };
 $("setupNext").onclick = () => {
+  if (!draftMe){ $("setupMsg").textContent = "Tap who you are at the top first."; return; }
+  if (!draftName()){ $("setupMsg").textContent = "Type your name in the box at the top."; return; }
   const clean = draft.filter(m => m.name.trim());
   const kids = clean.filter(m => !m.adult);
   if (!kids.length){ $("setupMsg").textContent = "Add at least one kid with a name."; return; }
   if (kids.some(k => !(+k.age > 0))){ $("setupMsg").textContent = "Every kid needs an age so the jar can pick the right ideas."; return; }
   clean.forEach(m => { m.name = m.name.trim(); if (!m.adult){ m.age = +m.age; m.tag = isTag(m); } });
+  S.me = draftName(); renderIam(me());
   S.family = clean;
   S.playing = clean.map(m => m.id);
   save();
@@ -382,7 +413,7 @@ function leadKids(){ const k = playingKids(), full = k.filter(m => !m.tag); retu
 function tagAlongs(){ const k = playingKids(); return k.filter(m => m.tag).length && k.some(m => !m.tag) ? k.filter(m => m.tag) : []; }
 function grownUpPlaying(){ return playingMembers().some(m => m.adult); }
 function hasAdultsInFamily(){ return S.family.some(m => m.adult); }
-// If no grown-ups are in the family at all, don't hide grown-up ideas (Dad chose not to list himself).
+// If no grown-ups are in the family at all, don't hide grown-up ideas (the grown-up chose not to list themselves).
 function fits(i){
   const kids = leadKids();
   if (kids.length && i.age > kids[kids.length - 1].age) return false;
@@ -648,7 +679,7 @@ function pickName(list, fallback){ return list.length ? list[Math.floor(Math.ran
 function fill(t){
   if (!t) return t;
   const kids = playingKids(), grown = playingMembers().filter(m => m.adult);
-  return t.replace(/\{kid\}/g, () => pickName(kids, "Someone")).replace(/\{grown\}/g, () => pickName(grown, "Dad")).replace(/\{xmas\}/g, daysToXmas());
+  return t.replace(/\{kid\}/g, () => pickName(kids, "Someone")).replace(/\{grown\}/g, () => pickName(grown, me())).replace(/\{xmas\}/g, daysToXmas());
 }
 const norm = it => typeof it === "string" ? {q:it} : it;
 const LV = {easy:"🟢", medium:"🟡", hard:"🔴", final:"🏆"};
@@ -764,6 +795,7 @@ document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => show(b.
 $("legend").innerHTML = Object.values(CATS).map(c => `<span><i style="background:${c.hex}"></i>${c.label}</span>`).join("");
 
 // ---------- start ----------
+renderIam(S.me || S.family.length ? me() : "___");
 if (!S.family.length) openSetup();
 else if (S.jar === null){ $("starterCount").textContent = IDEAS.filter(i => i.starter).length; $("allCount").textContent = IDEAS.length; show("Fill"); }
 else show("Jar");

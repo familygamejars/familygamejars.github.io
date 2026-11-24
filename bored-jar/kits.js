@@ -1,7 +1,7 @@
 // ===== Game kits: questions, builds, hints and twists from our family game nights =====
 // Each kit: decks [{name, level, secs (default timer for cards), items}], twists [], tip, turns (story counter)
 // An item is a string, or {q, a (answer), hints [], ask [[question, answer]], secs, note}
-// Templates: {kid} = a random kid who's playing, {grown} = a grown-up playing (or "Dad"), {xmas} = days until Christmas
+// Templates: {kid} = a random kid who's playing, {grown} = a grown-up playing (or whoever set up the app: Dad, Mom, Grandma, Grandpa or Friend), {xmas} = days until Christmas
 const KITS = {
   estimate: {
     tip: "Guess first, then prove it! Closest guess gets 3 points, second gets 1.",
