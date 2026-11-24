@@ -1,11 +1,14 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.familygamejars.boredjar",
       "sha256_cert_fingerprints": [
-        "36:AA:0C:01:AF:FB:B3:24:B4:47:5B:2D:CD:86:30:79:0F:8C:59:95:34:FD:01:2D:D4:CD:CA:70:91:61:82:74"
+        "36:AA:0C:01:AF:FB:B3:24:B4:47:5B:2D:CD:86:30:79:0F:8C:59:95:34:FD:01:2D:D4:CD:CA:70:91:61:82:74",
+        "D0:A0:82:49:83:9A:0B:E3:3F:56:CA:7A:1A:B5:2F:11:FB:C2:26:5C:87:20:4B:99:F9:ED:3C:75:F2:B9:6B:F6"
       ]
     }
   }
