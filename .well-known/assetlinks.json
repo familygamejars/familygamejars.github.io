@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.familygamejars.boredjar",
+      "sha256_cert_fingerprints": [
+        "36:AA:0C:01:AF:FB:B3:24:B4:47:5B:2D:CD:86:30:79:0F:8C:59:95:34:FD:01:2D:D4:CD:CA:70:91:61:82:74"
+      ]
+    }
+  }
+]
